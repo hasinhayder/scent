@@ -1,20 +1,11 @@
 import { Page } from "playwright";
 import { PerfumeResult } from "./types.js";
 
-/** Navigate a loaded Fragrantica perfume page and extract profile data from the DOM. */
-export async function scrapePerfumePage(
+/** Scrape the main profile data (no scrolling needed — available in initial DOM). */
+export async function scrapeImmediate(
   page: Page,
-): Promise<PerfumeResult> {
-  // Scroll down incrementally to trigger lazy-loaded sections
-  const height = await page.evaluate(() => document.body.scrollHeight);
-  const steps = 10;
-  for (let i = 0; i < steps; i++) {
-    await page.mouse.wheel(0, height / steps);
-    await page.waitForTimeout(500);
-  }
-  await page.waitForTimeout(3000);
-
-  const data = await page.evaluate(() => {
+): Promise<Partial<PerfumeResult>> {
+  return page.evaluate(() => {
     const title = document.title;
     const h1 = document.querySelector("h1");
     const h1Text = h1?.textContent?.trim() || "";
@@ -28,7 +19,6 @@ export async function scrapePerfumePage(
     const yearMatch = title.match(/\b(1[89]\d{2}|20\d{2})\b/);
     if (yearMatch) year = yearMatch[1];
 
-    // Brand from the first designer link with .html suffix
     let brand = "Unknown";
     {
       const links = document.querySelectorAll('a[href*="/designers/"]');
@@ -41,14 +31,12 @@ export async function scrapePerfumePage(
       }
     }
 
-    // Name: h1 text minus brand
     let name = h1Text.replace(/\s+for\s+(men|women)/i, "").trim();
     const escBrand = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     name = name
       .replace(new RegExp("\\s*" + escBrand + "\\s*$", "i"), "")
       .trim();
 
-    // Rating & votes
     let rating: number | null = null;
     const ratingEl = document.querySelector('[itemprop="ratingValue"]');
     if (ratingEl) {
@@ -65,7 +53,6 @@ export async function scrapePerfumePage(
       if (!isNaN(v)) votes = v;
     }
 
-    // Perfumers: links with multiple words
     const perfumers: string[] = [];
     document.querySelectorAll('a[href*="/noses/"]').forEach((el) => {
       const text = el.textContent?.trim();
@@ -79,7 +66,6 @@ export async function scrapePerfumePage(
       }
     });
 
-    // Accords
     const accords: Array<{ name: string; intensity: number }> = [];
     document
       .querySelectorAll<HTMLElement>('[class*="rounded-br-lg"]')
@@ -102,8 +88,6 @@ export async function scrapePerfumePage(
         }
       });
 
-    // Description: first paragraph near top with substantial text,
-    // but skip disclaimer-like paragraphs
     let description = "";
     const paragraphs = document.querySelectorAll("p");
     for (const p of paragraphs) {
@@ -124,7 +108,6 @@ export async function scrapePerfumePage(
       }
     }
 
-    // Notes pyramid
     const notes = {
       top: [] as string[],
       middle: [] as string[],
@@ -134,7 +117,6 @@ export async function scrapePerfumePage(
     Array.from(document.querySelectorAll("h2, h3, h4, h5")).forEach(
       (heading) => {
         const hText = heading.textContent?.trim() || "";
-
         let section: "top" | "middle" | "base" | null = null;
         if (/^Top Notes$/i.test(hText)) section = "top";
         else if (/^Middle Notes$/i.test(hText)) section = "middle";
@@ -143,16 +125,12 @@ export async function scrapePerfumePage(
 
         let container = heading.parentElement;
         for (let d = 0; d < 5 && container; d++) {
-          const links = container.querySelectorAll(
-            'a[href*="/notes/"]',
-          );
+          const links = container.querySelectorAll('a[href*="/notes/"]');
           if (links.length > 0) {
             const noteNames: string[] = [];
             links.forEach((link) => {
               const n = link.textContent?.trim();
-              if (n && !noteNames.includes(n)) {
-                noteNames.push(n);
-              }
+              if (n && !noteNames.includes(n)) noteNames.push(n);
             });
             if (noteNames.length > 0) notes[section] = noteNames;
             break;
@@ -162,20 +140,57 @@ export async function scrapePerfumePage(
       },
     );
 
-    // Extract perfumes from "This perfume reminds me of" carousel section
+    return {
+      name,
+      brand,
+      year,
+      gender,
+      rating,
+      votes,
+      accords,
+      notes,
+      description: description.slice(0, 600),
+      perfumers,
+      url: window.location.href,
+    };
+  });
+}
+
+/** Scroll the page and scrape the lazy-loaded "similar" sections. */
+export async function scrapeSimilarPerfumes(
+  page: Page,
+): Promise<Pick<PerfumeResult, "remindsMeOf" | "similarPerfumes">> {
+  const height = await page.evaluate(() => document.body.scrollHeight);
+  const steps = 10;
+  for (let i = 0; i < steps; i++) {
+    await page.mouse.wheel(0, height / steps);
+    await page.waitForTimeout(500);
+  }
+  await page.waitForTimeout(3000);
+
+  return page.evaluate(() => {
     const remindsMeOf: string[] = [];
     {
       const allH3 = document.querySelectorAll("h3");
       for (const h of allH3) {
-        if (h.textContent?.trim().toLowerCase() === "this perfume reminds me of") {
+        if (
+          h.textContent?.trim().toLowerCase() ===
+          "this perfume reminds me of"
+        ) {
           let container = h.parentElement;
           for (let i = 0; i < 10 && container; i++) {
-            const carousel = container.querySelector(".perfume-carousel-scroll");
+            const carousel = container.querySelector(
+              ".perfume-carousel-scroll",
+            );
             if (carousel) {
-              const cards = carousel.querySelectorAll(".tw-carousel-perfume-card");
+              const cards = carousel.querySelectorAll(
+                ".tw-carousel-perfume-card",
+              );
               for (const card of cards) {
                 const nameEl = card.querySelector(".font-medium");
-                const hrefEl = card.querySelector('a[href*="/perfume/"]');
+                const hrefEl = card.querySelector(
+                  'a[href*="/perfume/"]',
+                );
                 const name = nameEl?.textContent?.trim() || "";
                 const href = hrefEl?.getAttribute("href") || "";
                 if (name && href) remindsMeOf.push(name);
@@ -189,7 +204,6 @@ export async function scrapePerfumePage(
       }
     }
 
-    // Fallback: "People who like this also like" section
     const similarPerfumes: string[] = [];
     const allHeadings = document.querySelectorAll("h2, h3, h4, h5");
     for (const h of allHeadings) {
@@ -201,7 +215,13 @@ export async function scrapePerfumePage(
           const seen = new Set<string>();
           for (const a of links) {
             const t = a.textContent?.trim();
-            if (t && t.length > 1 && !t.includes("Compare") && !t.includes("Find more") && !seen.has(t)) {
+            if (
+              t &&
+              t.length > 1 &&
+              !t.includes("Compare") &&
+              !t.includes("Find more") &&
+              !seen.has(t)
+            ) {
               seen.add(t);
               similarPerfumes.push(t);
             }
@@ -213,21 +233,8 @@ export async function scrapePerfumePage(
     }
 
     return {
-      name,
-      brand,
-      year,
-      gender,
-      rating,
-      votes,
-      accords,
-      notes,
-      description: description.slice(0, 600),
-      perfumers,
       remindsMeOf: remindsMeOf.slice(0, 5),
       similarPerfumes: similarPerfumes.slice(0, 5),
-      url: window.location.href,
     };
   });
-
-  return data;
 }

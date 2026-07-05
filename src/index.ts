@@ -5,8 +5,8 @@ import ora from "ora";
 import chalk from "chalk";
 import { chromium } from "playwright";
 import { searchFragrantica } from "./search.js";
-import { scrapePerfumePage } from "./scraper.js";
-import { displayProfile, displaySearchResults } from "./display.js";
+import { scrapeImmediate, scrapeSimilarPerfumes } from "./scraper.js";
+import { displayImmediate, displaySimilar, displaySearchResults } from "./display.js";
 import { SearchResult } from "./types.js";
 import * as readline from "readline";
 
@@ -41,7 +41,7 @@ async function main() {
   program
     .name("scent-cli")
     .description("Look up fragrance profiles from Fragrantica")
-    .version("1.2.0")
+    .version("1.2.1")
     .argument("<name>", "the scent name to search for")
     .option("-p, --pick", "always show the picker instead of auto-selecting")
     .action(async (query: string, opts: { pick?: boolean }) => {
@@ -149,10 +149,20 @@ async function main() {
         });
         await detailPage.waitForTimeout(5000);
 
-        const profile = await scrapePerfumePage(detailPage);
-        await detailPage.close();
+        // Phase 1: scrape and display main profile immediately
+        const profile = await scrapeImmediate(detailPage);
         scrapeSpinner.stop();
-        displayProfile(profile);
+        displayImmediate(profile);
+
+        // Phase 2: scroll and scrape lazy-loaded similar sections
+        console.log("");
+        const similarSpinner = ora(
+          `Finding similar perfumes...`,
+        ).start();
+        const similar = await scrapeSimilarPerfumes(detailPage);
+        similarSpinner.stop();
+        await detailPage.close();
+        displaySimilar({ ...profile, ...similar });
       } catch (err) {
         searchSpinner.stop();
         console.log(

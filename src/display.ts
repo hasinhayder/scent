@@ -1,14 +1,13 @@
 import chalk from "chalk";
 import { PerfumeResult, SearchResult } from "./types.js";
 
-/** Render a horizontal bar of the given character at a percentage width. */
 function bar(char: string, percentage: number, maxWidth: number): string {
   const width = Math.round((percentage / 100) * maxWidth);
   return char.repeat(Math.max(1, width));
 }
 
-/** Print a full perfume profile to the terminal with color formatting. */
-export function displayProfile(perfume: PerfumeResult): void {
+/** Print the main profile (name, accords, notes, description — no similar sections). */
+export function displayImmediate(perfume: Partial<PerfumeResult>): void {
   console.log("");
   console.log(
     chalk.bold.cyan(
@@ -22,29 +21,29 @@ export function displayProfile(perfume: PerfumeResult): void {
     perfume.gender === "female"
       ? chalk.magenta("♀ female")
       : perfume.gender === "male"
-      ? chalk.blue("♂ male")
-      : chalk.green("⚥ unisex"),
+        ? chalk.blue("♂ male")
+        : chalk.green("⚥ unisex"),
   );
-  if (perfume.rating !== null) {
+  if (perfume.rating !== null && perfume.rating !== undefined) {
     const stars = "★".repeat(Math.round(perfume.rating));
     meta.push(
       chalk.yellow(stars) + chalk.dim(` ${perfume.rating.toFixed(2)}`),
     );
   }
-  if (perfume.votes !== null) {
+  if (perfume.votes !== null && perfume.votes !== undefined) {
     meta.push(chalk.dim(`${perfume.votes.toLocaleString()} votes`));
   }
 
   console.log(meta.join("  "));
 
-  if (perfume.perfumers.length > 0) {
+  if (perfume.perfumers && perfume.perfumers.length > 0) {
     console.log(
       chalk.dim(`Perfumer${perfume.perfumers.length > 1 ? "s" : ""}: `) +
         perfume.perfumers.join(", "),
     );
   }
 
-  if (perfume.accords.length > 0) {
+  if (perfume.accords && perfume.accords.length > 0) {
     console.log("");
     console.log(chalk.bold("Main Accords"));
     const maxBar = 30;
@@ -66,28 +65,17 @@ export function displayProfile(perfume: PerfumeResult): void {
     }
   }
 
-  if (
-    perfume.notes.top.length > 0 ||
-    perfume.notes.middle.length > 0 ||
-    perfume.notes.base.length > 0
-  ) {
-    console.log("");
-    console.log(chalk.bold("Fragrance Pyramid"));
-
-    if (perfume.notes.top.length > 0) {
-      console.log(
-        `  ${chalk.green("Top:    ")} ${perfume.notes.top.join(", ")}`,
-      );
-    }
-    if (perfume.notes.middle.length > 0) {
-      console.log(
-        `  ${chalk.yellow("Middle: ")} ${perfume.notes.middle.join(", ")}`,
-      );
-    }
-    if (perfume.notes.base.length > 0) {
-      console.log(
-        `  ${chalk.red("Base:   ")} ${perfume.notes.base.join(", ")}`,
-      );
+  if (perfume.notes) {
+    const { top, middle, base } = perfume.notes;
+    if (top.length > 0 || middle.length > 0 || base.length > 0) {
+      console.log("");
+      console.log(chalk.bold("Fragrance Pyramid"));
+      if (top.length > 0)
+        console.log(`  ${chalk.green("Top:    ")} ${top.join(", ")}`);
+      if (middle.length > 0)
+        console.log(`  ${chalk.yellow("Middle: ")} ${middle.join(", ")}`);
+      if (base.length > 0)
+        console.log(`  ${chalk.red("Base:   ")} ${base.join(", ")}`);
     }
   }
 
@@ -98,8 +86,11 @@ export function displayProfile(perfume: PerfumeResult): void {
       console.log(chalk.dim(`  ${line.trim()}`));
     }
   }
+}
 
-  if (perfume.remindsMeOf.length > 0) {
+/** Print the similar perfumes sections and URL (shown after scrolling). */
+export function displaySimilar(perfume: Partial<PerfumeResult>): void {
+  if (perfume.remindsMeOf && perfume.remindsMeOf.length > 0) {
     console.log("");
     console.log(chalk.bold("This perfume reminds me of"));
     for (const name of perfume.remindsMeOf) {
@@ -107,7 +98,7 @@ export function displayProfile(perfume: PerfumeResult): void {
     }
   }
 
-  if (perfume.similarPerfumes.length > 0) {
+  if (perfume.similarPerfumes && perfume.similarPerfumes.length > 0) {
     console.log("");
     console.log(chalk.bold("People who like this also like"));
     for (const name of perfume.similarPerfumes) {
@@ -140,8 +131,8 @@ export function displaySearchResults(
       r.gender === "female"
         ? chalk.magenta("♀")
         : r.gender === "male"
-        ? chalk.blue("♂")
-        : chalk.green("⚥");
+          ? chalk.blue("♂")
+          : chalk.green("⚥");
     const year = r.year ? chalk.yellow(` (${r.year})`) : "";
     console.log(`  ${num}. ${name} ${brand} ${genderIcon}${year}`);
   }
