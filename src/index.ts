@@ -41,7 +41,7 @@ async function main() {
   program
     .name("scent-cli")
     .description("Look up fragrance profiles from Fragrantica")
-    .version("1.0.2")
+    .version("1.2.0")
     .argument("<name>", "the scent name to search for")
     .option("-p, --pick", "always show the picker instead of auto-selecting")
     .action(async (query: string, opts: { pick?: boolean }) => {
@@ -57,18 +57,30 @@ async function main() {
           args: [
             "--disable-blink-features=AutomationControlled",
             "--no-sandbox",
+            "--disable-features=IsolateOrigins,site-per-process",
+            "--disable-web-security",
           ],
         });
         const context = await browser.newContext({
           userAgent:
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
           viewport: { width: 1920, height: 1080 },
           locale: "en-US",
+          extraHTTPHeaders: {
+            "Accept-Language": "en-US,en;q=0.9",
+          },
         });
 
         await context.addInitScript(() => {
           Object.defineProperty(navigator, "webdriver", { get: () => false });
           (window as any).chrome = { runtime: {} };
+          Object.defineProperty(navigator, "platform", { get: () => "MacIntel" });
+          Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 8 });
+          const origQuery = window.navigator.permissions.query.bind(window.navigator.permissions);
+          window.navigator.permissions.query = (info: any) =>
+            info.name === "notifications"
+              ? Promise.resolve({ state: "denied" } as PermissionStatus)
+              : origQuery(info);
         });
 
         const results = await searchFragrantica(query, context);

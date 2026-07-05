@@ -153,6 +153,29 @@ export async function scrapePerfumePage(
       },
     );
 
+    // "People who like this also like" section
+    const similarPerfumes: string[] = [];
+    const allHeadings = document.querySelectorAll("h2, h3, h4, h5");
+    for (const h of allHeadings) {
+      const text = h.textContent?.trim() || "";
+      if (/people who like this also like/i.test(text)) {
+        let el = h.parentElement;
+        for (let i = 0; i < 10 && el; i++) {
+          const links = el.querySelectorAll('a[href*="/perfume/"]');
+          const seen = new Set<string>();
+          for (const a of links) {
+            const t = a.textContent?.trim();
+            if (t && t.length > 1 && !t.includes("Compare") && !t.includes("Find more") && !seen.has(t)) {
+              seen.add(t);
+              similarPerfumes.push(t);
+            }
+          }
+          if (similarPerfumes.length >= 5) break;
+          el = el.parentElement;
+        }
+      }
+    }
+
     return {
       name,
       brand,
@@ -164,6 +187,7 @@ export async function scrapePerfumePage(
       notes,
       description: description.slice(0, 600),
       perfumers,
+      similarPerfumes: similarPerfumes.slice(0, 5),
       url: window.location.href,
     };
   });

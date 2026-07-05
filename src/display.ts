@@ -99,6 +99,16 @@ export function displayProfile(perfume: PerfumeResult): void {
     }
   }
 
+  if (perfume.similarPerfumes.length > 0) {
+    console.log("");
+    console.log(chalk.bold("People who like this also like"));
+    for (const name of perfume.similarPerfumes) {
+      console.log(`  ${chalk.cyan("•")} ${chalk.white(name)}`);
+    }
+  }
+
+  console.log("");
+  console.log(chalk.dim.underline(perfume.url));
   console.log("");
 }
 

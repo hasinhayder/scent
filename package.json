@@ -1,6 +1,6 @@
 {
   "name": "scent-cli",
-  "version": "1.0.2",
+  "version": "1.2.0",
   "description": "CLI tool to look up fragrance profiles from Fragrantica",
   "type": "module",
   "bin": {
@@ -38,12 +38,10 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.6.2",
-    "cheerio": "^1.2.0",
     "commander": "^15.0.0",
     "fuse.js": "^7.4.2",
     "ora": "^9.4.1",
-    "playwright": "^1.61.1",
-    "playwright-extra": "^4.3.6"
+    "playwright": "^1.61.1"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",

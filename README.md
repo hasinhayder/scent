@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.2-blue" alt="version" />
+  <img src="https://img.shields.io/badge/version-1.2.0-blue" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node" />
 </p>
@@ -24,6 +24,7 @@
 - **📊 Main Accords** — Color-coded intensity bars for every accord
 - **🧪 Fragrance Pyramid** — Top, middle, and base notes in a clear visual hierarchy
 - **⭐ Ratings & Votes** — Star ratings, vote counts, and gender classification
+- **🔗 Similar Perfumes** — Shows "People who like this also like" and "This perfume reminds me of" recommendations
 - **📝 Descriptions** — Clean, concise descriptions (auto-skipped ads and disclaimers)
 - **⏳ Caching** — Results cached for 24 hours so you never wait twice
 - **🎨 Beautiful Output** — Colorful terminal output with chalk
@@ -69,7 +70,7 @@ scent-cli "Sauvage"
 
 1. **Search** — Opens Fragrantica in a headless browser and scrapes results
 2. **Select** — Picks the best match automatically, or lets you choose from a list
-3. **Scrape** — Pulls the full perfume profile including accords, notes, and ratings
+3. **Scrape** — Pulls the full perfume profile including accords, notes, ratings, and similar perfumes
 4. **Display** — Shows everything with beautiful colored terminal output
 
 ### 🧰 Tech Stack
