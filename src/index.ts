@@ -10,6 +10,7 @@ import { displayProfile, displaySearchResults } from "./display.js";
 import { SearchResult } from "./types.js";
 import * as readline from "readline";
 
+/** Create a readline interface for user input. */
 function createPrompt(): readline.Interface {
   return readline.createInterface({
     input: process.stdin,

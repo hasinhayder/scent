@@ -1,6 +1,7 @@
 import { Page } from "playwright";
 import { PerfumeResult } from "./types.js";
 
+/** Navigate a loaded Fragrantica perfume page and extract profile data from the DOM. */
 export async function scrapePerfumePage(
   page: Page,
 ): Promise<PerfumeResult> {

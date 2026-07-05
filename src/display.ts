@@ -1,11 +1,13 @@
 import chalk from "chalk";
 import { PerfumeResult, SearchResult } from "./types.js";
 
+/** Render a horizontal bar of the given character at a percentage width. */
 function bar(char: string, percentage: number, maxWidth: number): string {
   const width = Math.round((percentage / 100) * maxWidth);
   return char.repeat(Math.max(1, width));
 }
 
+/** Print a full perfume profile to the terminal with color formatting. */
 export function displayProfile(perfume: PerfumeResult): void {
   console.log("");
   console.log(
@@ -103,6 +105,7 @@ export function displayProfile(perfume: PerfumeResult): void {
   console.log("");
 }
 
+/** Print a numbered list of search results to the terminal. */
 export function displaySearchResults(
   results: SearchResult[],
   query: string,

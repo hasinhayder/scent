@@ -4,6 +4,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 
+/** Directory and file for search result caching (24h TTL). */
 const CACHE_DIR = join(homedir(), ".scent-cache");
 const CACHE_FILE = join(CACHE_DIR, "cache.json");
 const CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -26,6 +27,7 @@ function cacheKey(query: string): string {
   return query.toLowerCase().trim();
 }
 
+/** Load cached results for a query, or null if expired/missing. */
 export function getCached(query: string): SearchResult[] | null {
   const cache = loadCache();
   const entry = cache[cacheKey(query)];
@@ -38,12 +40,14 @@ export function getCached(query: string): SearchResult[] | null {
   return entry.results;
 }
 
+/** Store results in the cache for the given query. */
 function setCache(query: string, results: SearchResult[]): void {
   const cache = loadCache();
   cache[cacheKey(query)] = { query, results, timestamp: Date.now() };
   saveCache(cache);
 }
 
+/** Parse brand, name, gender, and year from a Fragrantica URL and title. */
 function parseFromUrl(
   url: string,
   title: string,
@@ -90,6 +94,7 @@ function parseFromUrl(
   return { brand, name, gender, year };
 }
 
+/** Search Fragrantica for a query, using cache if available. */
 export async function searchFragrantica(
   query: string,
   context: BrowserContext,
