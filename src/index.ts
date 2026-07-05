@@ -6,6 +6,7 @@ import chalk from "chalk";
 import { chromium } from "playwright";
 import { searchFragrantica } from "./search.js";
 import { scrapeImmediate, scrapeSimilarPerfumes } from "./scraper.js";
+import { gotoWithRetry, jitter } from "./rateLimit.js";
 import { displayImmediate, displaySimilar, displaySearchResults } from "./display.js";
 import { SearchResult } from "./types.js";
 import * as readline from "readline";
@@ -41,7 +42,7 @@ async function main() {
   program
     .name("scent-cli")
     .description("Look up fragrance profiles from Fragrantica")
-    .version("1.2.1")
+    .version("1.2.2")
     .argument("<name>", "the scent name to search for")
     .option("-p, --pick", "always show the picker instead of auto-selecting")
     .action(async (query: string, opts: { pick?: boolean }) => {
@@ -143,11 +144,8 @@ async function main() {
         ).start();
 
         const detailPage = await context.newPage();
-        await detailPage.goto(selected.url, {
-          waitUntil: "domcontentloaded",
-          timeout: 30000,
-        });
-        await detailPage.waitForTimeout(5000);
+        await gotoWithRetry(detailPage, selected.url);
+        await detailPage.waitForTimeout(jitter(5000));
 
         // Phase 1: scrape and display main profile immediately
         const profile = await scrapeImmediate(detailPage);

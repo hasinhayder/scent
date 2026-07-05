@@ -3,6 +3,7 @@ import { SearchResult, CacheEntry } from "./types.js";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+import { gotoWithRetry, jitter } from "./rateLimit.js";
 
 /** Directory and file for search result caching (24h TTL). */
 const CACHE_DIR = join(homedir(), ".scent-cache");
@@ -105,18 +106,15 @@ export async function searchFragrantica(
   const page = await context.newPage();
 
   try {
-    await page.goto("https://www.fragrantica.com/search/", {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
-    });
-    await page.waitForTimeout(4000);
+    await gotoWithRetry(page, "https://www.fragrantica.com/search/");
+    await page.waitForTimeout(jitter(4000));
 
     const mainInput = page.locator(
       'input[placeholder="Start typing...."]',
     );
     await mainInput.waitFor({ state: "visible", timeout: 15000 });
     await mainInput.fill(query);
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(jitter(4000));
 
     const results = await page
       .locator('a[href*="/perfume/"]')

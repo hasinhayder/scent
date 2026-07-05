@@ -91,7 +91,6 @@ export function displayImmediate(perfume: Partial<PerfumeResult>): void {
 /** Print the similar perfumes sections and URL (shown after scrolling). */
 export function displaySimilar(perfume: Partial<PerfumeResult>): void {
   if (perfume.remindsMeOf && perfume.remindsMeOf.length > 0) {
-    console.log("");
     console.log(chalk.bold("This perfume reminds me of"));
     for (const name of perfume.remindsMeOf) {
       console.log(`  ${chalk.cyan("•")} ${chalk.white(name)}`);

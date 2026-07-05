@@ -1,5 +1,6 @@
 import { Page } from "playwright";
 import { PerfumeResult } from "./types.js";
+import { jitter } from "./rateLimit.js";
 
 /** Scrape the main profile data (no scrolling needed — available in initial DOM). */
 export async function scrapeImmediate(
@@ -164,9 +165,9 @@ export async function scrapeSimilarPerfumes(
   const steps = 10;
   for (let i = 0; i < steps; i++) {
     await page.mouse.wheel(0, height / steps);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(jitter(500));
   }
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(jitter(3000));
 
   return page.evaluate(() => {
     const remindsMeOf: string[] = [];
