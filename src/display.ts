@@ -100,9 +100,6 @@ export function displayProfile(perfume: PerfumeResult): void {
   }
 
   console.log("");
-  console.log(chalk.dim.underline(perfume.url));
-  console.log(chalk.dim(`  0. Exit`));
-  console.log("");
 }
 
 /** Print a numbered list of search results to the terminal. */
