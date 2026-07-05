@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-blue" alt="version" />
+  <img src="https://img.shields.io/badge/version-1.2.1-blue" alt="version" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node" />
 </p>
@@ -70,7 +70,7 @@ scent-cli "Sauvage"
 
 1. **Search** — Opens Fragrantica in a headless browser and scrapes results
 2. **Select** — Picks the best match automatically, or lets you choose from a list
-3. **Scrape** — Pulls the full perfume profile including accords, notes, ratings, and similar perfumes
+3. **Scrape & Stream** — Pulls profile data progressively — accords, notes, and description appear instantly, then similar perfumes load as the page scrolls
 4. **Display** — Shows everything with beautiful colored terminal output
 
 ### 🧰 Tech Stack
