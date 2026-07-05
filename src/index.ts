@@ -39,7 +39,7 @@ async function main() {
   const program = new Command();
 
   program
-    .name("scent")
+    .name("scent-cli")
     .description("Look up fragrance profiles from Fragrantica")
     .version("1.0.2")
     .argument("<name>", "the scent name to search for")

@@ -31,19 +31,19 @@
 ### 📦 Install
 
 ```bash
-npm install -g scent
+npm install -g scent-cli
 ```
 
 Or run directly without installing:
 
 ```bash
-npx scent "Creed Aventus"
+npx scent-cli "Creed Aventus"
 ```
 
 ### 🚀 Usage
 
 ```bash
-scent <name> [options]
+scent-cli <name> [options]
 ```
 
 | Option | Description |
@@ -56,13 +56,13 @@ scent <name> [options]
 
 ```bash
 # Auto-select the best match
-scent "Creed Aventus"
+scent-cli "Creed Aventus"
 
 # Force the interactive picker
-scent "Bleu de Chanel" --pick
+scent-cli "Bleu de Chanel" --pick
 
 # Quick lookup
-scent "Sauvage"
+scent-cli "Sauvage"
 ```
 
 ### 🎯 How It Works

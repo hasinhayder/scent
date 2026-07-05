@@ -1,15 +1,31 @@
 {
-  "name": "scent",
+  "name": "scent-cli",
   "version": "1.0.2",
   "description": "CLI tool to look up fragrance profiles from Fragrantica",
   "type": "module",
   "bin": {
-    "scent": "./dist/index.js"
+    "scent-cli": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hasinhayder/scent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hasinhayder/scent/issues"
+  },
+  "homepage": "https://github.com/hasinhayder/scent#readme",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
   },
   "keywords": [
     "fragrance",
@@ -18,8 +34,8 @@
     "fragrantica",
     "cli"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Hasin Hayder",
+  "license": "MIT",
   "dependencies": {
     "chalk": "^5.6.2",
     "cheerio": "^1.2.0",
