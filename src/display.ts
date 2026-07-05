@@ -99,6 +99,14 @@ export function displayProfile(perfume: PerfumeResult): void {
     }
   }
 
+  if (perfume.remindsMeOf.length > 0) {
+    console.log("");
+    console.log(chalk.bold("This perfume reminds me of"));
+    for (const name of perfume.remindsMeOf) {
+      console.log(`  ${chalk.cyan("•")} ${chalk.white(name)}`);
+    }
+  }
+
   if (perfume.similarPerfumes.length > 0) {
     console.log("");
     console.log(chalk.bold("People who like this also like"));

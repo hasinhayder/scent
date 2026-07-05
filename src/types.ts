@@ -32,6 +32,7 @@ export interface PerfumeResult {
   notes: NotesPyramid;
   description: string;
   perfumers: string[];
+  remindsMeOf: string[];
   similarPerfumes: string[];
   url: string;
 }

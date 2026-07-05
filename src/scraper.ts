@@ -5,6 +5,15 @@ import { PerfumeResult } from "./types.js";
 export async function scrapePerfumePage(
   page: Page,
 ): Promise<PerfumeResult> {
+  // Scroll down incrementally to trigger lazy-loaded sections
+  const height = await page.evaluate(() => document.body.scrollHeight);
+  const steps = 10;
+  for (let i = 0; i < steps; i++) {
+    await page.mouse.wheel(0, height / steps);
+    await page.waitForTimeout(500);
+  }
+  await page.waitForTimeout(3000);
+
   const data = await page.evaluate(() => {
     const title = document.title;
     const h1 = document.querySelector("h1");
@@ -153,7 +162,34 @@ export async function scrapePerfumePage(
       },
     );
 
-    // "People who like this also like" section
+    // Extract perfumes from "This perfume reminds me of" carousel section
+    const remindsMeOf: string[] = [];
+    {
+      const allH3 = document.querySelectorAll("h3");
+      for (const h of allH3) {
+        if (h.textContent?.trim().toLowerCase() === "this perfume reminds me of") {
+          let container = h.parentElement;
+          for (let i = 0; i < 10 && container; i++) {
+            const carousel = container.querySelector(".perfume-carousel-scroll");
+            if (carousel) {
+              const cards = carousel.querySelectorAll(".tw-carousel-perfume-card");
+              for (const card of cards) {
+                const nameEl = card.querySelector(".font-medium");
+                const hrefEl = card.querySelector('a[href*="/perfume/"]');
+                const name = nameEl?.textContent?.trim() || "";
+                const href = hrefEl?.getAttribute("href") || "";
+                if (name && href) remindsMeOf.push(name);
+              }
+              break;
+            }
+            container = container.parentElement;
+          }
+          break;
+        }
+      }
+    }
+
+    // Fallback: "People who like this also like" section
     const similarPerfumes: string[] = [];
     const allHeadings = document.querySelectorAll("h2, h3, h4, h5");
     for (const h of allHeadings) {
@@ -187,6 +223,7 @@ export async function scrapePerfumePage(
       notes,
       description: description.slice(0, 600),
       perfumers,
+      remindsMeOf: remindsMeOf.slice(0, 5),
       similarPerfumes: similarPerfumes.slice(0, 5),
       url: window.location.href,
     };
